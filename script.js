@@ -1,10 +1,10 @@
 /**
  * Gets the URLs for all loaded images on the page.
- * @function getAllImages
+ * @function getAllImagesUrls
  * @param {number} height [height=400] - The optional minimum height of the image (default is 400).
  * @returns {Array<string|null>} An array of URLs or null.
  */
-const getAllImages = (height = 400) => {
+const getAllImagesUrls = (height = 400) => {
     const images = document.querySelectorAll("img");
     const imagesSrc = [];
 
@@ -24,6 +24,7 @@ const getAllImages = (height = 400) => {
  * @returns {string|null} The filename extracted from the URL or null.
  */
 const getFilenameFromUrl = (url) => {
+    // Matches the filename between the forward slash (\) and question mark (?) in the URL.
     const fileNameRegex = /\/([^/]+)\?/;
     const match = url.match(fileNameRegex);
 
@@ -67,22 +68,23 @@ const downloadImage = async ({ url, filename = "image.jpg" }) => {
 };
 
 /**
- * Downloads all images on a page by:
- * 1. Looping through all of the images
- * 2. Getting the filename from the URL
- * 3. Downloading the image
+ * Downloads all loaded images over 400px on an Instagram page.
  * @function downloadAllImages
  */
 const downloadAllImages = () => {
-    const images = getAllImages();
+    const images = getAllImagesUrls();
+    // Maps each image URL to a promise using the downloadImage function.
     const downloadPromises = images.map((image) => {
         const filename = getFilenameFromUrl(image);
         if (filename !== null) return downloadImage({ url: image, filename });
     });
 
-    Promise.all(downloadPromises).then(() =>
-        console.log("All images downloaded successfully!")
-    );
+    // Wait for all of the promises to either be resolved or rejected.
+    Promise.all(downloadPromises)
+        .then(() => console.log("All images downloaded successfully!"))
+        .catch((error) => {
+            console.error("At least one promise was rejected:", error);
+        });
 };
 
 downloadAllImages();
