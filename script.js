@@ -80,11 +80,28 @@ const downloadAllImages = () => {
     });
 
     // Wait for all of the promises to either be resolved or rejected.
-    Promise.all(downloadPromises)
-        .then(() => console.log("All images downloaded successfully!"))
-        .catch((error) => {
-            console.error("At least one promise was rejected:", error);
-        });
+    Promise.allSettled(downloadPromises).then((results) => {
+        // Create a list of fulfilled promises
+        const successfulDownloads = results.filter(
+            (result) => result.status === "fulfilled"
+        );
+        // Create a list of rejected promises
+        const failedDownloads = results.filter(
+            (result) => result.status === "rejected"
+        );
+
+        console.log(
+            `${successfulDownloads.length} images downloaded successfully.`
+        );
+        
+        // List the number of images that failed to download and the reason why each one was rejected
+        if (failedDownloads.length > 0) {
+            console.error(
+                `${failedDownloads.length} images failed to download:`
+            );
+            failedDownloads.forEach((result) => console.error(result.reason));
+        }
+    });
 };
 
 downloadAllImages();
