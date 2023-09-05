@@ -5,12 +5,12 @@
  * @returns {Array<string|null>} An array of URLs or null.
  */
 const getAllImages = (height = 400) => {
-    const images = document.getElementsByTagName("img");
+    const images = document.querySelectorAll("img");
     const imagesSrc = [];
 
-    for (let i = 0; i < images.length; i++) {
-        if (images[i].height > height) {
-            imagesSrc.push(images[i].src);
+    for (const image of images) {
+        if (image.height > height) {
+            imagesSrc.push(image.src);
         }
     }
 
@@ -38,13 +38,17 @@ const getFilenameFromUrl = (url) => {
  * @param {string} url
  * @param {string} filename
  */
-const downloadImage = async ({ url, filename }) => {
+const downloadImage = async ({ url, filename = "image.jpg" }) => {
     try {
         // Fetch the image data
         const response = await fetch(url);
-        const blob = await response.blob();
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
 
         // Create a blob URL
+        const blob = await response.blob();
         const blobUrl = URL.createObjectURL(blob);
 
         // Create a link element
@@ -71,12 +75,14 @@ const downloadImage = async ({ url, filename }) => {
  */
 const downloadAllImages = () => {
     const images = getAllImages();
-    images.forEach((image) => {
+    const downloadPromises = images.map((image) => {
         const filename = getFilenameFromUrl(image);
-        if (filename !== null) {
-            downloadImage({ url: image, filename });
-        }
+        if (filename !== null) return downloadImage({ url: image, filename });
     });
+
+    Promise.all(downloadPromises).then(() =>
+        console.log("All images downloaded successfully!")
+    );
 };
 
 downloadAllImages();
