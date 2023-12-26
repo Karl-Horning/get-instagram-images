@@ -5,6 +5,11 @@
  * @returns {Array<string|null>} An array of URLs or null.
  */
 const getAllImagesUrls = (height = 400) => {
+    if (!document || !document.querySelectorAll) {
+        console.error("Document or querySelectorAll not available");
+        return [];
+    }
+
     const images = document.querySelectorAll("img");
     const imagesSrc = [];
 
@@ -93,13 +98,19 @@ const downloadAllImages = () => {
         console.log(
             `${successfulDownloads.length} images downloaded successfully.`
         );
-        
+
+        if (successfulDownloads.length === 0) {
+            console.log("No images were downloaded.");
+        }
+
         // List the number of images that failed to download and the reason why each one was rejected
         if (failedDownloads.length > 0) {
             console.error(
                 `${failedDownloads.length} images failed to download:`
             );
-            failedDownloads.forEach((result) => console.error(result.reason));
+            failedDownloads.forEach((result, index) => {
+                console.error(`Error for image ${index + 1}:`, result.reason);
+            });
         }
     });
 };
